@@ -4,7 +4,7 @@ var mqtt    = require('mqtt');
 module.exports = function(homebridge) {
 	Service = homebridge.hap.Service;
 	Characteristic = homebridge.hap.Characteristic;
-	homebridge.registerAccessory("homebridge-mqtt-sonoffrf-receiver", "mqtt-sonoffrf-receiver", RfSensorAccessory);
+	homebridge.registerAccessory("homebridge-mqtt-sonoffrf-receiver-2", "mqtt-sonoffrf-receiver-2", RfSensorAccessory);
 }
 
 function RfSensorAccessory(log, config) {
@@ -14,12 +14,13 @@ function RfSensorAccessory(log, config) {
 	this.name = config["name"];
 	this.url = config['url'];
 	this.topic = config['topic'];
-	this.sn = config['sn'] || 'Unknown';
+	this.serialNumberMAC = config['serialNumberMAC'] || "";
 	this.rfcode = config['rfcode'] || 'undefined';
 	this.rfkey = config['rfkey'] || 'undefined';
 	this.ondelay = config['ondelay'] || 10000;
 	this.rfcodeon = config['rfcodeon'] || 'undefined';
 	this.rfcodeoff = config['rfcodeoff'] || 'undefined';
+	this.rfcodelowbattery = config['rfcodelowbattery'] || 'undefined';
 	this.accessoryservicetype = config['accessoryservicetype'] || 'MotionSensor';
 
 	this.client_Id 		= 'mqttjs_' + Math.random().toString(16).substr(2, 8);
@@ -47,6 +48,15 @@ function RfSensorAccessory(log, config) {
 	case 'MotionSensor':
 		this.service = new Service.MotionSensor();
 		break;
+			case 'ContactSensor':
+		this.service = new Service.ContactSensor();
+		break;
+	case 'SmokeSensor':
+		this.service = new Service.SmokeSensor();
+		break;
+	case 'LeakSensor':
+		this.service = new Service.LeakSensor();
+		break;
 	case 'StatelessProgrammableSwitch':
 		this.service = new Service.StatelessProgrammableSwitch();
 		this.service.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setProps({ maxValue: 0 });
@@ -57,7 +67,11 @@ function RfSensorAccessory(log, config) {
 
 	var self = this;
 	var timeout;
-
+        var timeoutbat;
+	
+	
+	
+	
 	this.client.subscribe(this.topic);
  
 	this.client.on('message', function (topic, message) {
@@ -67,6 +81,8 @@ function RfSensorAccessory(log, config) {
 		var rfreceivedrfkey = data.RfReceived.RfKey;
 		if (self.rfcode != 'undefined' || self.rfkey != 'undefined') {
 			var sensoractive = Boolean(self.rfcode == rfreceiveddata || self.rfcode == 'any' || self.rfkey == rfreceivedrfkey || self.rfkey == 'any');
+			
+			
 			switch (self.accessoryservicetype) {
 			case 'MotionSensor':
 				if (sensoractive) {
@@ -79,6 +95,24 @@ function RfSensorAccessory(log, config) {
 				self.service.getCharacteristic(Characteristic.MotionDetected).setValue(self.value);
 				}.bind(self), self.ondelay);
 				break;
+			case 'ContactSensor':
+				if (sensoractive) {
+					self.value = Boolean('true');
+					self.service.getCharacteristic(Characteristic.ContactSensorState).setValue(self.value);
+						}
+				break;
+			case 'LeakSensor':
+				if (sensoractive) {
+					self.value = Boolean('true');
+					self.service.getCharacteristic(Characteristic.LeakDetected).setValue(self.value);
+				}
+				break;
+			case 'SmokeSensor':
+				if (sensoractive) {
+					self.value = Boolean('true');
+					self.service.getCharacteristic(Characteristic.SmokeDetected).setValue(self.value);
+				}
+				break;
 			case 'StatelessProgrammableSwitch':
 				if (sensoractive) {
 					self.service.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
@@ -86,15 +120,72 @@ function RfSensorAccessory(log, config) {
 				break;
 			}
 		}
+		
+		
 		var sensoron = Boolean(self.rfcodeon == rfreceiveddata);
 		if (sensoron) {
+			
+			switch (self.accessoryservicetype) {
+			case 'MotionSensor':
 			self.value = Boolean('true');
 			self.service.getCharacteristic(Characteristic.MotionDetected).setValue(self.value);
+			break;
+			case 'ContactSensor':
+			self.value = Boolean('true');
+			self.service.getCharacteristic(Characteristic.ContactSensorState).setValue(self.value);
+			break;
+			case 'SmokeSensor':
+			self.value = Boolean('true');
+			self.service.getCharacteristic(Characteristic.SmokeDetected).setValue(self.value);
+			break;
+			case 'LeakSensor':
+			self.value = Boolean('true');
+			self.service.getCharacteristic(Characteristic.LeakDetected).setValue(self.value);
+			break;
+			}
 		}
+		
+		
 		var sensoroff = Boolean(self.rfcodeoff == rfreceiveddata);
 		if (sensoroff) {
 			self.value = Boolean(0);
+			
+			switch (self.accessoryservicetype) {
+			case 'MotionSensor':
 			self.service.getCharacteristic(Characteristic.MotionDetected).setValue(self.value);
+			break;
+			case 'ContactSensor':
+			self.service.getCharacteristic(Characteristic.ContactSensorState).setValue(self.value);
+			break;
+			case 'SmokeSensor':
+			self.service.getCharacteristic(Characteristic.SmokeDetected).setValue(self.value);
+			break;
+			case 'LeakSensor':
+			self.service.getCharacteristic(Characteristic.LeakDetected).setValue(self.value);
+			break;
+			}
+		}
+		
+                var lowbat = Boolean(self.rfcodelowbattery == rfreceiveddata);
+		if (lowbat) {
+			switch (self.accessoryservicetype) {
+			case 'ContactSensor':
+			self.value = Boolean('true');						
+			self.service.getCharacteristic(Characteristic.StatusLowBattery).setValue(self.value);
+			break;
+			case 'MotionSensor':
+			self.value = Boolean('true');						
+			self.service.getCharacteristic(Characteristic.StatusLowBattery).setValue(self.value);
+			break;
+			case 'LakeSensor':
+			self.value = Boolean('true');						
+			self.service.getCharacteristic(Characteristic.StatusLowBattery).setValue(self.value);
+			break;
+			case 'SmokeSensor':
+			self.value = Boolean('true');						
+			self.service.getCharacteristic(Characteristic.StatusLowBattery).setValue(self.value);
+			break;	
+			}
 		}
 	});
 
@@ -113,7 +204,7 @@ RfSensorAccessory.prototype.getServices = function() {
 		.setCharacteristic(Characteristic.Name, this.name)
 		.setCharacteristic(Characteristic.Manufacturer, "Sonoff")
 		.setCharacteristic(Characteristic.Model, "RF Bridge 433")
-		.setCharacteristic(Characteristic.SerialNumber, this.sn);
+		.setCharacteristic(Characteristic.SerialNumber, this.serialNumberMAC);
 
 	return [informationService, this.service];
 }
