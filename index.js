@@ -48,7 +48,7 @@ function RfSensorAccessory(log, config) {
 	case 'MotionSensor':
 		this.service = new Service.MotionSensor();
 		break;
-			case 'ContactSensor':
+	case 'ContactSensor':
 		this.service = new Service.ContactSensor();
 		break;
 	case 'SmokeSensor':
