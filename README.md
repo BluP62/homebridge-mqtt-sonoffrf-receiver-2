@@ -6,7 +6,7 @@ Sensor can be [motion sensor](https://www.itead.cc/sonoff-rf-bridge-433.html) or
 
 Installation
 --------------------
-    sudo npm install -g https://github/BluP62/homebridge-mqtt-sonoffrf-receiver-2
+    sudo npm install -g https://github.com/BluP62/homebridge-mqtt-sonoffrf-receiver-2
 
 
 Sample HomeBridge Configuration
