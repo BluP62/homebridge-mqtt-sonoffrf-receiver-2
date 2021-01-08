@@ -151,18 +151,18 @@ function RfSensorAccessory(log, config) {
 			self.value = Boolean(0);
 			
 			switch (self.accessoryservicetype) {
-			case 'MotionSensor':
-			self.service.getCharacteristic(Characteristic.MotionDetected).setValue(self.value);
-			break;
+			//case 'MotionSensor':
+			//self.service.getCharacteristic(Characteristic.MotionDetected).setValue(self.value);
+			//break;
 			case 'ContactSensor':
 			self.service.getCharacteristic(Characteristic.ContactSensorState).setValue(self.value);
 			break;
-			case 'SmokeSensor':
-			self.service.getCharacteristic(Characteristic.SmokeDetected).setValue(self.value);
-			break;
-			case 'LeakSensor':
-			self.service.getCharacteristic(Characteristic.LeakDetected).setValue(self.value);
-			break;
+			//case 'SmokeSensor':
+			//self.service.getCharacteristic(Characteristic.SmokeDetected).setValue(self.value);
+			//break;
+			//case 'LeakSensor':
+			//self.service.getCharacteristic(Characteristic.LeakDetected).setValue(self.value);
+			//break;
 			}
 		}
 		
