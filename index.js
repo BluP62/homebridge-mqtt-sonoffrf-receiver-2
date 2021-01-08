@@ -177,7 +177,7 @@ function RfSensorAccessory(log, config) {
 			self.value = Boolean('true');						
 			self.service.getCharacteristic(Characteristic.StatusLowBattery).setValue(self.value);
 			break;
-			case 'LakeSensor':
+			case 'LeakSensor':
 			self.value = Boolean('true');						
 			self.service.getCharacteristic(Characteristic.StatusLowBattery).setValue(self.value);
 			break;
